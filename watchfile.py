@@ -22,17 +22,20 @@ def tail_file(filename):
 def send_notification(line):
     syslog.syslog("This line triggered a notification: " + line)
 
-    # Courtesy of https://github.com/raspberrycoulis/pushover
-    conn = httplib.HTTPSConnection("api.pushover.net:443")
-    conn.request("POST", "/1/messages.json",
-        urllib.urlencode({
-        "token": app_token,                       # Insert app token here
-        "user": user_token,                       # Insert user token here
-        "html": "0",                                # 1 for HTML, 0 to disable
-        "title": "Rasberry Pi notification",                # Title of the message
-        "message": line,     # Content of the message
-        }), { "Content-type": "application/x-www-form-urlencoded" })
-    response = conn.getresponse()
+    try:
+        # Courtesy of https://github.com/raspberrycoulis/pushover
+        conn = httplib.HTTPSConnection("api.pushover.net:443")
+        conn.request("POST", "/1/messages.json",
+            urllib.urlencode({
+            "token": app_token,                       # Insert app token here
+            "user": user_token,                       # Insert user token here
+            "html": "0",                                # 1 for HTML, 0 to disable
+            "title": "Rasberry Pi notification",                # Title of the message
+            "message": line,     # Content of the message
+            }), { "Content-type": "application/x-www-form-urlencoded" })
+        response = conn.getresponse()
+    except:
+        syslog.syslog("Connecting to Pushover failed. Could not send notification.")
 
 def main(argv):
    global app_token
