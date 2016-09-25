@@ -6,9 +6,11 @@ import re
 import sys, getopt
 import syslog
 import tailer
+import atexit
 
 user_token = ''
 app_token = ''
+pid_file = '/run/watchfile.pid'
 
 def analyze_line(line):
     syslog.syslog("Analyzing this line: " + line)
@@ -57,5 +59,24 @@ def main(argv):
 
    tail_file("/var/log/ruter.log")
 
+def write_pid_file():
+    pid = str(os.getpid())
+    print "PID: " + pid
+    f = open(pid_file, "w")
+    f.write(pid)
+    f.close()
+
+def all_done():
+    pid = str(pid_file)
+    os.remove(pid)
+
 if __name__ == "__main__":
-   main(sys.argv[1:])
+    
+    try:    
+        atexit.register(all_done) # Courtesy of https://coderwall.com/p/fudnxq/keep-your-python-app-running
+        write_pid_file()
+        main(sys.argv[1:])
+        all_done()
+    except KeyboardInterrupt:
+        sys.exit(0)
+
